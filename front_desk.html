@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Front Desk{% endblock %}
+{% macro collect(r) %}
+  {% if r.balance > 0 %}
+  <form class="d-inline-flex gap-1 align-items-center" method="post" action="{{ url_for('main.desk_collect', id=r.b.id) }}">
+    <input class="form-control form-control-sm" style="width:100px" type="number" name="amount" step="0.01" min="0.01" max="{{ r.balance }}" value="{{ r.balance }}">
+    <select class="form-select form-select-sm" style="width:90px" name="method"><option>Cash</option><option>Card</option></select>
+    <button class="btn btn-sm btn-warning">Collect</button></form>
+  {% endif %}
+{% endmacro %}
+{% block content %}
+<h3 class="mb-3">Front Desk</h3>
+<div class="card shadow-sm mb-4"><div class="card-header">Arrivals — confirmed bookings</div>
+<div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead class="table-dark"><tr><th>#</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Balance</th><th>Actions</th></tr></thead>
+  {% for r in arrivals %}<tr>
+    <td>{{ r.b.id }}</td><td>{{ r.b.guest.full_name }}</td><td>{{ r.room.room_number if r.room else '—' }}</td>
+    <td>{{ r.b.check_in }}{% if r.b.check_in == today %} <span class="badge bg-warning text-dark">today</span>{% endif %}</td><td>{{ r.b.check_out }}</td>
+    <td>{{ '{:,.0f}'.format(r.inv.total if r.inv else 0) }}</td>
+    <td>{% if r.balance > 0 %}<span class="text-danger fw-bold">{{ '{:,.0f}'.format(r.balance) }}</span>{% else %}<span class="text-success fw-bold">Paid</span>{% endif %}</td>
+    <td class="text-nowrap">{{ collect(r) }}
+      {% if r.b.check_in <= today %}<form class="d-inline" method="post" action="{{ url_for('main.desk_checkin', id=r.b.id) }}"><button class="btn btn-sm btn-success">Check-in</button></form>{% endif %}</td>
+  </tr>{% else %}<tr><td colspan="8" class="text-center text-muted py-4">No confirmed bookings.</td></tr>{% endfor %}
+</table></div></div>
+
+<div class="card shadow-sm"><div class="card-header">In-house — checked-in guests</div>
+<div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead class="table-dark"><tr><th>#</th><th>Guest</th><th>Room</th><th>Check-out</th><th>Total</th><th>Balance</th><th>Actions</th></tr></thead>
+  {% for r in inhouse %}<tr>
+    <td>{{ r.b.id }}</td><td>{{ r.b.guest.full_name }}</td><td>{{ r.room.room_number if r.room else '—' }}</td>
+    <td>{{ r.b.check_out }}</td><td>{{ '{:,.0f}'.format(r.inv.total if r.inv else 0) }}</td>
+    <td>{% if r.balance > 0 %}<span class="text-danger fw-bold">{{ '{:,.0f}'.format(r.balance) }}</span>{% else %}<span class="text-success fw-bold">Paid</span>{% endif %}</td>
+    <td class="text-nowrap">{{ collect(r) }}
+      <form class="d-inline" method="post" action="{{ url_for('main.desk_checkout', id=r.b.id) }}"><button class="btn btn-sm btn-danger">Check-out</button></form></td>
+  </tr>{% else %}<tr><td colspan="7" class="text-center text-muted py-4">No guests in-house.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

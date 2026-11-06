@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}{{ 'Edit' if obj else 'Add' }} {{ nice(table) }}{% endblock %}
+{% block content %}
+<h3 class="mb-3">{{ 'Edit' if obj else 'Add' }} {{ nice(table) }}</h3>
+<form method="post" class="card shadow-sm p-4"><div class="row g-3">
+  {% for f in fields %}
+  <div class="col-md-6"><label class="form-label">{{ f.label }}{% if f.required %} <span class="text-danger">*</span>{% endif %}</label>
+    {% if f.kind == 'select' %}
+      <select class="form-select" name="{{ f.name }}" {{ 'required' if f.required }}>
+        {% if not f.required %}<option value="">---</option>{% endif %}
+        {% for val, text in f.options %}<option value="{{ val }}" {{ 'selected' if f.value|string == val|string }}>{{ text }}</option>{% endfor %}
+      </select>
+    {% elif f.kind == 'textarea' %}
+      <textarea class="form-control" name="{{ f.name }}" rows="3">{{ f.value }}</textarea>
+    {% else %}
+      <input class="form-control" type="{{ f.kind }}" name="{{ f.name }}" value="{{ f.value }}"
+             {% if f.step %}step="{{ f.step }}"{% endif %} {{ 'required' if f.required }}>
+    {% endif %}</div>
+  {% endfor %}
+  {% if is_user %}<div class="col-md-6"><label class="form-label">Password{% if not obj %} *{% else %} (leave blank to keep current){% endif %}</label>
+    <input class="form-control" type="password" name="password"></div>{% endif %}
+  <div class="col-md-6"><label class="form-label">Status</label>
+    <select class="form-select" name="status">
+      <option value="active" {{ 'selected' if status=='active' }}>Active</option>
+      <option value="deactive" {{ 'selected' if status=='deactive' }}>Deactive</option></select></div>
+</div>
+<div class="mt-4"><button class="btn btn-primary">Save</button>
+<a class="btn btn-outline-secondary" href="{{ url_for('main.list_view', table=table) }}">Cancel</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h3 class="mb-3">Dashboard</h3>
+<div class="row g-3 mb-4">
+  {% for label, value in stats %}
+  <div class="col-6 col-md"><div class="card stat-card text-center"><div class="card-body">
+    <div class="num">{{ value }}</div><div class="text-muted">{{ label }}</div></div></div></div>
+  {% endfor %}
+</div>
+<div class="card shadow-sm"><div class="card-header">Recent Bookings</div>
+<table class="table mb-0">
+  <tr><th>#</th><th>Guest</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr>
+  {% for b in recent %}
+  <tr><td>{{ b.id }}</td><td>{{ b.guest.full_name }}</td><td>{{ b.check_in }}</td><td>{{ b.check_out }}</td><td>{{ b.booking_status }}</td></tr>
+  {% else %}<tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

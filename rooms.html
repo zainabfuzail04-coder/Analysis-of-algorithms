@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% block title %}Rooms{% endblock %}
+{% block content %}
+<h3 class="mb-3">Find a room</h3>
+<form class="card p-3 mb-4" method="get"><div class="row g-2 align-items-end">
+  <div class="col-md-2"><label class="form-label small">Check-in</label><input class="form-control" type="date" name="check_in" value="{{ ci }}" min="{{ today }}"></div>
+  <div class="col-md-2"><label class="form-label small">Check-out</label><input class="form-control" type="date" name="check_out" value="{{ co }}" min="{{ today }}"></div>
+  <div class="col-md-2"><label class="form-label small">Guests</label><input class="form-control" type="number" name="guests" value="{{ guests }}" min="1" max="10"></div>
+  <div class="col-md-2"><label class="form-label small">Room type</label><select class="form-select" name="room_type"><option value="">Any</option>
+    {% for t in types %}<option value="{{ t.id }}" {{ 'selected' if type_id == t.id }}>{{ t.name }}</option>{% endfor %}</select></div>
+  <div class="col-md-2"><label class="form-label small">Max price</label><input class="form-control" type="number" name="max_price" value="{{ max_price }}" min="0" placeholder="Any"></div>
+  <div class="col-md-2"><button class="btn btn-primary w-100">Search</button></div>
+</div></form>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+{% if nights %}<p class="text-muted">{{ results|length }} room(s) available for {{ nights }} night(s).</p>{% endif %}
+<div class="row g-4">
+  {% for r in results %}
+  <div class="col-md-4"><div class="card h-100">
+    <div class="room-img">🛏️</div>
+    <div class="card-body">
+      <h5 class="mb-0">Room {{ r.room_number }} · {{ r.room_type.name }}</h5>
+      <p class="small text-muted mb-2">Floor {{ r.floor.number }} · up to {{ r.room_type.max_guests }} guests{% if r.room_type.bed_type %} · {{ r.room_type.bed_type.name }} bed{% endif %}</p>
+      {% for l in r.amenity_links if not l.is_deleted %}<span class="amenity">{{ l.amenity.name }}</span>{% endfor %}
+      <div class="price mt-2">{{ '{:,.0f}'.format(r.price_per_night) }} <small>/ night</small></div>
+      {% if nights %}<div class="small text-muted">Total for {{ nights }} night(s): {{ '{:,.0f}'.format(r.price_per_night * nights) }} + tax</div>{% endif %}
+    </div>
+    <div class="card-footer bg-white border-0"><a class="btn btn-primary w-100"
+      href="{{ url_for('main.book', room_id=r.id, check_in=ci, check_out=co, adults=guests) }}">Book now</a></div>
+  </div></div>
+  {% else %}<div class="col-12"><div class="alert alert-info">No rooms match your search. Try different dates or filters.</div></div>{% endfor %}
+</div>
+{% endblock %}

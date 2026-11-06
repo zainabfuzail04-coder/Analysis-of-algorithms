@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}My Bookings{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h3 class="mb-0">My Bookings</h3>
+  <a class="btn btn-primary" href="{{ url_for('main.rooms') }}">+ New booking</a></div>
+<div class="card table-responsive"><table class="table align-middle mb-0">
+  <thead class="table-dark"><tr><th>#</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Paid</th><th>Status</th><th></th></tr></thead>
+  {% for r in rows %}<tr><td>{{ r.b.id }}</td><td>{{ r.room.room_number if r.room }} {{ r.room.room_type.name if r.room }}</td>
+    <td>{{ r.b.check_in }}</td><td>{{ r.b.check_out }}</td><td>{{ '{:,.0f}'.format(r.total) }}</td><td>{{ '{:,.0f}'.format(r.paid) }}</td>
+    <td><span class="badge badge-{{ r.b.booking_status }}">{{ r.b.booking_status|replace('_',' ')|title }}</span></td>
+    <td class="text-nowrap"><a class="btn btn-sm btn-outline-dark" href="{{ url_for('main.booking_detail', id=r.b.id) }}">View</a>
+      {% if r.b.booking_status in ['confirmed', 'checked_in'] and r.total - r.paid > 0 %}
+      <a class="btn btn-sm btn-success" href="{{ url_for('main.booking_checkout', id=r.b.id) }}">Pay</a>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="8" class="text-center text-muted py-4">You have no bookings yet. <a href="{{ url_for('main.rooms') }}">Find a room</a></td></tr>{% endfor %}
+</table></div>
+{% endblock %}

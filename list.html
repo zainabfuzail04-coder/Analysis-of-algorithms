@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% block title %}{{ nice(table) }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">{{ nice(table) }}</h3>
+  <a class="btn btn-primary" href="{{ url_for('main.form_view', table=table) }}">+ Add</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-5"><input class="form-control" name="q" value="{{ search }}" placeholder="Search..."></div>
+  <div class="col-md-3"><select class="form-select" name="status">
+    <option value="">All status</option>
+    <option value="active" {{ 'selected' if status=='active' }}>Active</option>
+    <option value="deactive" {{ 'selected' if status=='deactive' }}>Deactive</option></select></div>
+  <div class="col-auto"><button class="btn btn-dark">Filter</button>
+  <a class="btn btn-outline-secondary" href="{{ url_for('main.list_view', table=table) }}">Reset</a></div>
+</form>
+<div class="table-responsive card shadow-sm"><table class="table table-hover mb-0 align-middle">
+  <thead class="table-dark"><tr><th>ID</th>
+    {% for c in cols %}<th>{{ nice(c.name) }}</th>{% endfor %}<th>Status</th><th>Actions</th></tr></thead>
+  {% for row in page.items %}
+  <tr><td>{{ row.id }}</td>
+    {% for c in cols %}<td>{{ row|show(c) }}</td>{% endfor %}
+    <td><form method="post" action="{{ url_for('main.toggle_view', table=table, id=row.id) }}">
+      <button class="btn btn-sm {{ 'btn-success' if row.status=='active' else 'btn-secondary' }}">{{ row.status }}</button></form></td>
+    <td class="text-nowrap">
+      <a class="btn btn-sm btn-warning" href="{{ url_for('main.form_view', table=table, id=row.id) }}">Edit</a>
+      <form class="d-inline" method="post" action="{{ url_for('main.delete_view', table=table, id=row.id) }}"
+            onsubmit="return confirm('Delete this record?')"><button class="btn btn-sm btn-danger">Delete</button></form>
+    </td></tr>
+  {% else %}<tr><td colspan="{{ cols|length + 3 }}" class="text-center text-muted py-4">No records found.</td></tr>{% endfor %}
+</table></div>
+<nav class="mt-3"><ul class="pagination">
+  {% for p in range(1, page.pages + 1) %}
+  <li class="page-item {{ 'active' if p == page.page }}"><a class="page-link"
+    href="{{ url_for('main.list_view', table=table, page=p, q=search, status=status) }}">{{ p }}</a></li>
+  {% endfor %}
+</ul></nav>
+{% endblock %}

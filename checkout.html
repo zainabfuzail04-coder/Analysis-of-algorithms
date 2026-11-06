@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% block title %}Pay for Booking #{{ b.id }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Secure payment</h3>
+  <a href="{{ url_for('main.booking_detail', id=b.id) }}">← Back to booking</a></div>
+<div class="row g-4">
+  <div class="col-lg-5"><div class="card p-4"><h5>Booking summary</h5>
+    <table class="table table-borderless mb-0">
+      <tr><th>Booking</th><td>#{{ b.id }}</td></tr>
+      <tr><th>Room</th><td>{{ room.room_number }} · {{ room.room_type.name }}</td></tr>
+      <tr><th>Stay</th><td>{{ b.check_in }} → {{ b.check_out }}<div class="small text-muted">{{ nights }} night{{ 's' if nights != 1 }}</div></td></tr>
+      <tr><th>Invoice</th><td>{{ inv.invoice_no }}</td></tr>
+      <tr><th>Invoice total</th><td>{{ '{:,.2f}'.format(inv.total) }}</td></tr>
+      <tr><th>Already paid</th><td>{{ '{:,.2f}'.format(paid) }}</td></tr>
+      <tr class="fw-bold"><th>Balance due</th><td class="price">{{ '{:,.2f}'.format(balance) }}</td></tr>
+    </table></div></div>
+
+  <div class="col-lg-7"><div class="card p-4"><h5>Pay by card</h5>
+    {% if gateway.sandbox %}
+    <div class="alert alert-warning py-2 small"><b>Test mode</b> — no real money is charged. Use <b>4242 4242 4242 4242</b>,
+      any future expiry and any CVV to succeed. <b>4000 0000 0000 0002</b> is declined; <b>4000 0000 0000 9995</b> = insufficient funds.</div>
+    {% endif %}
+    <form method="post" id="payForm" novalidate><input type="hidden" name="token" value="{{ token }}">
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label">Amount to pay</label>
+          <input class="form-control" id="amount" name="amount" type="number" step="0.01" min="0.01" max="{{ balance }}" value="{{ form.get('amount') or balance }}" required>
+          <div class="form-text">Pay the full balance or part of it (max {{ '{:,.2f}'.format(balance) }}).</div></div>
+        <div class="col-12"><label class="form-label">Name on card</label>
+          <input class="form-control" name="card_name" autocomplete="cc-name" value="{{ form.get('card_name','') }}" required></div>
+        <div class="col-12"><label class="form-label">Card number</label>
+          <input class="form-control" id="card_number" name="card_number" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="23" required></div>
+        <div class="col-6"><label class="form-label">Expiry (MM/YY)</label>
+          <input class="form-control" id="expiry" name="expiry" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="7" value="{{ form.get('expiry','') }}" required></div>
+        <div class="col-6"><label class="form-label">CVV</label>
+          <input class="form-control" name="cvv" inputmode="numeric" autocomplete="cc-csc" maxlength="4" placeholder="123" required></div>
+      </div>
+      <button class="btn btn-success btn-lg w-100 mt-4" id="payBtn" type="submit">Pay now</button>
+      <p class="small text-muted text-center mt-2 mb-0">🔒 Card details are never stored. Only the last 4 digits appear on your receipt.</p>
+    </form></div></div>
+</div>
+<script>
+(function () {
+  var num = document.getElementById('card_number'), exp = document.getElementById('expiry'),
+      amt = document.getElementById('amount'), btn = document.getElementById('payBtn'), form = document.getElementById('payForm');
+  function label() { var v = parseFloat(amt.value);
+    btn.textContent = v > 0 ? 'Pay ' + v.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' now' : 'Pay now'; }
+  num.addEventListener('input', function () { this.value = this.value.replace(/\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim(); });
+  exp.addEventListener('input', function () { var d = this.value.replace(/\D/g, '').slice(0, 4); this.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d; });
+  amt.addEventListener('input', label); label();
+  form.addEventListener('submit', function () { btn.disabled = true; btn.textContent = 'Processing…'; });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block title %}Sign In{% endblock %}
+{% block nav %}{% endblock %}
+{% block main %}
+<div class="auth-wrap">
+  <div class="auth-hero">
+    <div class="stars">★ ★ ★ ★ ★</div>
+    <h1 class="brand mt-3">Welcome to<br><span>Grand Hotel</span></h1>
+    <p>Manage reservations, rooms, guests, billing and services from one elegant dashboard.</p>
+  </div>
+  <div class="auth-panel"><div class="auth-box">
+    <h3 class="mb-1">Sign in</h3><p class="text-muted mb-4">Enter your email and password to continue.</p>
+    {% for cat, msg in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{ cat }} py-2">{{ msg }}</div>{% endfor %}
+    <form method="post">
+      <label class="form-label">Email</label>
+      <input class="form-control form-control-lg mb-3" type="email" name="email" placeholder="you@example.com" value="{{ last_user }}" required autofocus>
+      <label class="form-label">Password</label>
+      <input class="form-control form-control-lg mb-4" type="password" name="password" placeholder="••••••••" required>
+      <button class="btn btn-primary btn-lg w-100">Sign In</button>
+    </form>
+    <p class="mt-4 mb-0 text-center">New here? <a href="{{ url_for('main.register') }}">Create an account</a></p>
+  </div></div>
+</div>
+{% endblock %}

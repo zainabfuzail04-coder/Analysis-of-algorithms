@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Receipt{% endblock %}
+{% block content %}
+<style>@media print{.navbar,.no-print,.alert,.site-footer{display:none!important}}</style>
+<div class="card p-4 mx-auto" style="max-width:580px">
+  <div class="text-center mb-3">
+    {% if p.amount >= 0 %}<div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;font-size:34px">✓</div>
+      <h3 class="mt-2 mb-0">Payment successful</h3>
+    {% else %}<h3 class="mb-0">Refund issued</h3>{% endif %}
+    <div class="display-6 fw-bold mt-2">{{ '{:,.2f}'.format(p.amount|abs) }}</div>
+  </div>
+  <table class="table table-borderless mb-0">
+    <tr><th>Transaction ID</th><td class="text-end fw-semibold">{{ p.transaction_id or '—' }}</td></tr>
+    <tr><th>Date</th><td class="text-end">{{ p.paid_on }}</td></tr>
+    <tr><th>Method</th><td class="text-end">{{ p.payment_method.name }}{% if p.card_last4 %} ({{ p.card_brand }} •••• {{ p.card_last4 }}){% endif %}</td></tr>
+    <tr><th>Booking</th><td class="text-end">#{{ b.id }} · Room {{ room.room_number }}</td></tr>
+    <tr><th>Stay</th><td class="text-end">{{ b.check_in }} → {{ b.check_out }}</td></tr>
+    <tr><th>Invoice</th><td class="text-end">{{ inv.invoice_no }} ({{ '{:,.0f}'.format(inv.total) }})</td></tr>
+    <tr><th>Total paid so far</th><td class="text-end">{{ '{:,.2f}'.format(paid) }}</td></tr>
+    <tr class="fw-bold border-top"><th>Remaining balance</th><td class="text-end">{% if balance <= 0 %}<span class="text-success">Fully paid ✓</span>{% else %}{{ '{:,.2f}'.format(balance) }}{% endif %}</td></tr>
+  </table>
+  <div class="d-flex gap-2 mt-4 no-print">
+    <a class="btn btn-outline-dark flex-fill" href="{{ url_for('main.booking_detail', id=b.id) }}">View booking</a>
+    {% if balance > 0 and b.booking_status in ['confirmed', 'checked_in'] %}<a class="btn btn-success flex-fill" href="{{ url_for('main.booking_checkout', id=b.id) }}">Pay balance</a>{% endif %}
+    <button class="btn btn-primary flex-fill" onclick="window.print()">Print receipt</button>
+  </div>
+</div>
+{% endblock %}

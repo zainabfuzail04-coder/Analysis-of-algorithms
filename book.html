@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}{{ 'Change Booking' if booking else 'Book Room' }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7"><div class="card p-4">
+    <h3>{{ 'Change your booking' if booking else 'Reserve your room' }}</h3>
+    {% for e in errors %}<div class="alert alert-danger py-2 mb-2">{{ e }}</div>{% endfor %}
+    <form method="post"><div class="row g-3 mt-1">
+      <div class="col-md-6"><label class="form-label">Check-in</label><input class="form-control" type="date" name="check_in" min="{{ today }}" value="{{ form.get('check_in','') }}" required></div>
+      <div class="col-md-6"><label class="form-label">Check-out</label><input class="form-control" type="date" name="check_out" min="{{ today }}" value="{{ form.get('check_out','') }}" required></div>
+      <div class="col-md-6"><label class="form-label">Guests</label><input class="form-control" type="number" name="adults" min="1" max="{{ room.room_type.max_guests }}" value="{{ form.get('adults', 1) }}" required></div>
+      <div class="col-md-6"><label class="form-label">Coupon code (optional)</label><input class="form-control" name="coupon" value="{{ form.get('coupon','') }}"></div>
+      <div class="col-12"><label class="form-label">Special requests (optional)</label><textarea class="form-control" name="notes" rows="2" maxlength="500">{{ form.get('notes','') }}</textarea></div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-primary" name="action" value="save">{{ 'Save changes' if booking else 'Confirm booking' }}</button>
+      <button class="btn btn-outline-dark" name="action" value="quote" formnovalidate>Check price</button>
+      <a class="btn btn-link" href="{{ url_for('main.booking_detail', id=booking.id) if booking else url_for('main.rooms') }}">Back</a>
+    </div></form>
+  </div></div>
+  <div class="col-lg-5">
+    <div class="card mb-3"><div class="room-img">🛏️</div><div class="card-body">
+      <h5>Room {{ room.room_number }} · {{ room.room_type.name }}</h5>
+      <p class="small text-muted mb-2">{{ room.room_type.description or '' }}</p>
+      {% for l in room.amenity_links if not l.is_deleted %}<span class="amenity">{{ l.amenity.name }}</span>{% endfor %}
+      <div class="price mt-2">{{ '{:,.0f}'.format(room.price_per_night) }} <small>/ night</small></div></div></div>
+    {% if quote %}<div class="card p-3"><h6>Price summary ({{ nights }} night{{ 's' if nights != 1 }})</h6>
+      <div class="d-flex justify-content-between"><span>Room</span><span>{{ '{:,.0f}'.format(quote.subtotal) }}</span></div>
+      {% if quote.discount %}<div class="d-flex justify-content-between text-success"><span>Discount ({{ quote.pct|int }}%)</span><span>-{{ '{:,.0f}'.format(quote.discount) }}</span></div>{% endif %}
+      <div class="d-flex justify-content-between"><span>Tax ({{ quote.tax_rate|int }}%)</span><span>{{ '{:,.0f}'.format(quote.tax) }}</span></div><hr class="my-2">
+      <div class="d-flex justify-content-between fw-bold"><span>Total</span><span>{{ '{:,.0f}'.format(quote.total) }}</span></div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}
